@@ -143,9 +143,16 @@ body ul li{
     border: #171717 1px solid;
     color: #292929;
     font-size: 30px;
+    padding: 0px;
     margin: 1% !important;
     margin-bottom: 3% !important;
     margin-left: 5.5% !important;
+    display: flex;
+}
+
+.photo img{
+    width: 99%;
+    height: auto;
 }
 
 th {
@@ -318,3 +325,5 @@ td {
 .profile-avatar{
     width: 200px;
 }
+
+
