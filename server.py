@@ -24,7 +24,7 @@ def DELETE_PHOTO(id, fileName):
     os.remove(f'C:\\Users\\User\\Desktop\\PROJECTS\\OnlyRussians\\static\\images\\{id}\\photos\\{fileName}')
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
 users = UsersDB('users.db')
 
@@ -184,7 +184,10 @@ def del_photo(photo_name):
     DELETE_PHOTO(session['information-user']['id'], photo_name)
     return redirect('/profile')
 
-
+@app.route('/n/<nickname>')
+def nick(nickname):
+    nickname = nickname[1:]
+    return render_template('notme.html', profile_info=users.get_info_user_through_name(nickname), page_type=nickname)
 
 app.run()
 
