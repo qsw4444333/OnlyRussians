@@ -20,6 +20,9 @@ def GET_PATH_TO_AVATAR(id):
 def GET_PATH_TO_PHOTO(id):
     return f'C:\\Users\\User\\Desktop\\PROJECTS\\OnlyRussians\\static\\images\\{id}\\photos'
 
+def DELETE_PHOTO(id, fileName):
+    os.remove(f'C:\\Users\\User\\Desktop\\PROJECTS\\OnlyRussians\\static\\images\\{id}\\photos\\{fileName}')
+
 
 app = Flask(__name__)
 
@@ -61,14 +64,10 @@ def information():
 
 @app.route('/profile')
 def profile():
-    print(users.get_photos(session['information-user']['id']))
-    try:
         session['error-login'] = ''
         session['error-register'] = ''
         session['information-user'] = users.get_info_user_through_name(session['information-user']['nickname'])
-        return render_template('profile.html', profile_info=session['information-user'], page_type='Профиль', photo_len=len(session['information-user']['photos']), error = session['error-file'])
-    except:
-        return redirect('/login')
+        return render_template('profile.html', profile_info=session['information-user'], page_type='Профиль', error = session['error-file'])
 
 @app.route('/admin')
 def admin():
@@ -106,7 +105,7 @@ def check_login():
 @app.route('/create-new-acc', methods=['POST'])
 def create_new_account():
     if request.method == 'POST':
-        req = {'name': request.form.get('login'), 'password': request.form.get('password'), 'email': request.form.get('email'), 'id': users.get_last_id()+1, 'admin': 0, 'online': 1, 'avatar': 'g', 'balance': 0, 'photos': 'Photos', 'nickname': request.form.get('nickname'), 'secondname': request.form.get('secondname'), 'description': 'Описание'}
+        req = {'name': request.form.get('login'), 'password': request.form.get('password'), 'email': request.form.get('email'), 'id': users.get_last_id()+1, 'admin': 0, 'online': 1, 'avatar': 'g', 'balance': 0, 'images': 'images', 'nickname': request.form.get('nickname'), 'secondname': request.form.get('secondname'), 'description': 'Описание'}
         if users.check_user_through_name(request.form.get('nickname')):
             session['error-register'] = 'Это имя уже используется!'
             return redirect('/register')
@@ -130,6 +129,7 @@ def download_avatar():
     if request.method == 'POST':
         file = request.files.get('file')
         if file:
+            CREATE_DIRECTORY(session['information-user']['id'])
             filename = f'{session["information-user"]["id"]}.{file.filename.split(".")[-1]}'
             app.config['UPLOAD_FOLDER'] = GET_PATH_TO_AVATAR(session['information-user']['id'])
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -150,12 +150,16 @@ def download_photo():
             filename = secure_filename(file.filename)
             app.config['UPLOAD_FOLDER'] = GET_PATH_TO_PHOTO(session['information-user']['id'])
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            if users.get_photos(session['information-user']['id']) == []:
+                users.edit(session['information-user']['nickname'], 'images', '')
+                images = f'{filename}'
+            else:
+                images = users.get_photos(session['information-user']['id'])
+                images += f' {filename}'
+            print(f'images: {images}')
 
-            photos = users.get_photos(session['information-user']['id'])
-            photos += f' {filename}'
-            print(f'photos: {photos}')
-
-            users.edit(session['information-user']['nickname'], 'photos', photos)
+            users.edit(session['information-user']['nickname'], 'images', images)
+            print(users.get_photos(session['information-user']['id']))
             session['information-user'] = users.get_info_user_through_name(session['information-user']['nickname'])
 
             return redirect('/profile')
@@ -167,6 +171,20 @@ def download_photo():
 def exit():
     session['information-user'] = []
     return redirect('/login')
+
+@app.route('/del-photo/<photo_name>')
+def del_photo(photo_name):
+    images = users.get_photos(session['information-user']['id'])
+    res = ''
+    for image in images.split():
+        if image != photo_name:
+            res += f' {image}'
+    users.edit(session['information-user']['nickname'], 'images', res)
+    session['information-user'] = users.get_info_user_through_id(session['information-user']['id'])
+    DELETE_PHOTO(session['information-user']['id'], photo_name)
+    return redirect('/profile')
+
+
 
 app.run()
 
