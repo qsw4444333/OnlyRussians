@@ -3,11 +3,11 @@ import sqlite3
 class UsersDB(object):
     def __init__(self, db_file_name):
         self.connect = sqlite3.connect(db_file_name, check_same_thread=False)
-        self.base_name = 'sfasd3243trdstrgtdtrtdsr'
+        self.base_name = 'srtye32423fs423ghhgsgf42ssaefsdsgfd3243tjgh4trdstrgthjdtrtdsr'
         self.cursor = self.connect.cursor()
-        self.cursor.execute(f'''CREATE TABLE {self.base_name}
-                               (id, name, email, balance, avatar, online, password, admin, photos, nickname, secondname, description)''')
-        self.inquiry = {'name': 'admin', 'avatar': '', 'balance': 100, 'online': 1, 'id': self.get_last_id()+1, 'admin': 1, 'email': 'admin', 'password': 'admin', 'photos': '', 'secondname': '', 'nickname': '', 'description': 'Статус'}
+        self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS {self.base_name}
+                               (id INT, name TEXT, email TEXT, balance INT, avatar TEXT, online TEXT, password TEXT, admin BOOL, images TEXT, nickname TEXT, secondname TEXT, description TEXT)''')
+        self.inquiry = {'name': 'admin', 'avatar': '', 'balance': 100, 'online': 1, 'id': self.get_last_id()+1, 'admin': 1, 'email': 'admin', 'password': 'admin', 'images': 'photos', 'secondname': '', 'nickname': '', 'description': 'Статус'}
         self.connect.commit()
         self.write_info_user(self.inquiry)
     def get_info_user_through_id(self, id):
@@ -44,9 +44,9 @@ class UsersDB(object):
                                                            WHERE id = "{id}"''')
         self.inquiry['password'] = self.inquiry['password'].fetchall()[0][0]
 
-        self.inquiry['photos'] = self.cursor.execute(f'''SELECT photos FROM {self.base_name}
+        self.inquiry['images'] = self.cursor.execute(f'''SELECT images FROM {self.base_name}
                                                         WHERE id = "{id}"''')
-        self.inquiry['photos'] = self.inquiry['photos'].fetchall()[0][0]
+        self.inquiry['images'] = self.inquiry['images'].fetchall()[0][0]
 
         self.inquiry['secondname'] = self.cursor.execute(f'''SELECT secondname FROM {self.base_name}
                                                            WHERE id = "{id}"''')
@@ -95,9 +95,9 @@ class UsersDB(object):
                                                            WHERE nickname = "{username}"''')
         self.inquiry['password'] = self.inquiry['password'].fetchall()[0][0]
         
-        self.inquiry['photos'] = self.cursor.execute(f'''SELECT photos FROM {self.base_name}
+        self.inquiry['images'] = self.cursor.execute(f'''SELECT images FROM {self.base_name}
                                                         WHERE nickname = "{username}"''')
-        self.inquiry['photos'] = self.inquiry['photos'].fetchall()[0][0]
+        self.inquiry['images'] = self.inquiry['images'].fetchall()[0][0]
 
         self.inquiry['secondname'] = self.cursor.execute(f'''SELECT secondname FROM {self.base_name}
                                                            WHERE nickname = "{username}"''')
@@ -112,9 +112,10 @@ class UsersDB(object):
 
     def get_photos(self, id):
         self.cursor = self.connect.cursor()
-        user = self.cursor.execute(f'''SELECT photos FROM {self.base_name}
-                                       WHERE id = "{id}"''').fetchall()
+        user = self.cursor.execute(f'''SELECT images FROM {self.base_name}
+                                       WHERE id = "{id}"''').fetchall()[0][0]
         self.connect.commit()
+        print(user)
         return user
 
     def check_user_through_name(self, username):
@@ -190,7 +191,7 @@ class UsersDB(object):
 
     def write_info_user(self, info):
         self.cursor = self.connect.cursor()
-        self.cursor.execute(f'''INSERT INTO {self.base_name} (name, avatar, balance, online, id, admin, password, email, nickname, secondname, photos, description) values("{info["name"]}", "{info["avatar"]}", {info["balance"]}, {info["online"]}, {info["id"]}, {info["admin"]}, "{info["password"]}", "{info["email"]}", "{info['nickname']}", "{info['secondname']}", "{info["photos"]}", "Описание")''')
+        self.cursor.execute(f'''INSERT INTO {self.base_name} (name, avatar, balance, online, id, admin, password, email, nickname, secondname, images, description) values("{info["name"]}", "{info["avatar"]}", {info["balance"]}, {info["online"]}, {info["id"]}, {info["admin"]}, "{info["password"]}", "{info["email"]}", "{info['nickname']}", "{info['secondname']}", "{info["images"]}", "Описание")''')
         self.connect.commit()
 
     def get_last_id(self):
